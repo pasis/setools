@@ -2081,7 +2081,7 @@ static int print_attr_types(FILE * fp, const qpol_type_t * type_datum, const apo
  * all of that user's roles.
  *
  * @param fp Reference to a file to which to print user information
- * @param type_datum Reference to sepol type_datum
+ * @param user_datum Reference to sepol user_datum
  * @param policydb Reference to a policy
  * @param expand Flag indicating whether to print each user's
  * roles
@@ -2150,7 +2150,7 @@ static int print_user_roles(FILE * fp, const qpol_user_t * user_datum, const apo
  * all of that role's types.
  *
  * @param fp Reference to a file to which to print role information
- * @param type_datum Reference to sepol type_datum
+ * @param role_datum Reference to sepol role_datum
  * @param policydb Reference to a policy
  * @param expand Flag indicating whether to print each role's
  * types
@@ -2215,7 +2215,7 @@ static int print_role_types(FILE * fp, const qpol_role_t * role_datum, const apo
  * all of that boolean's initial state.
  *
  * @param fp Reference to a file to which to print boolean information
- * @param type_datum Reference to sepol type_datum
+ * @param bool_datum Reference to sepol bool_datum
  * @param policydb Reference to a policy
  * @param expand Flag indicating whether to print each boolean's
  * initial state
@@ -2248,7 +2248,7 @@ static int print_bool_state(FILE * fp, const qpol_bool_t * bool_datum, const apo
  * all of that object class' permissions.
  *
  * @param fp Reference to a file to which to print object class information
- * @param type_datum Reference to sepol type_datum
+ * @param class_datum Reference to sepol class_datum
  * @param policydb Reference to a policy
  * @param expand Flag indicating whether to print each object class'
  * permissions
@@ -2346,7 +2346,7 @@ static int print_common_perms(FILE * fp, const qpol_common_t * common_datum, con
  * all of that category's sensitivies.
  *
  * @param fp Reference to a file to which to print category information
- * @param type_datum Reference to sepol type_datum
+ * @param cat_datum Reference to sepol cat_datum
  * @param policydb Reference to a policy
  * @param expand Flag indicating whether to print each category's
  * sensitivities
