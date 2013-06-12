@@ -60,6 +60,7 @@ static int print_user_roles(FILE * fp, const qpol_user_t * user_datum, const apo
 static int print_role_types(FILE * fp, const qpol_role_t * role_datum, const apol_policy_t * policydb, const int expand);
 static int print_bool_state(FILE * fp, const qpol_bool_t * bool_datum, const apol_policy_t * policydb, const int expand);
 static int print_class_perms(FILE * fp, const qpol_class_t * class_datum, const apol_policy_t * policydb, const int expand);
+static int print_common_perms(FILE * fp, const qpol_common_t * common_datum, const apol_policy_t * policydb, const int expand);
 static int print_cat_sens(FILE * fp, const qpol_cat_t * cat_datum, const apol_policy_t * policydb, const int expand);
 static int qpol_cat_datum_compare(const void *datum1, const void *datum2, void *data);
 static int qpol_level_datum_compare(const void *datum1, const void *datum2, void *data);
@@ -70,11 +71,13 @@ enum opt_values
 	OPT_INITIALSID, OPT_FS_USE, OPT_GENFSCON,
 	OPT_NETIFCON, OPT_NODECON, OPT_PORTCON, OPT_PROTOCOL,
 	OPT_PERMISSIVE, OPT_POLCAP,
-	OPT_ALL, OPT_STATS, OPT_CONSTRAIN
+	OPT_ALL, OPT_STATS, OPT_CONSTRAIN,
+	OPT_COMMON
 };
 
 static struct option const longopts[] = {
 	{"class", optional_argument, NULL, 'c'},
+	{"common", optional_argument, NULL, OPT_COMMON},
 	{"sensitivity", optional_argument, NULL, OPT_SENSITIVITY},
 	{"category", optional_argument, NULL, OPT_CATEGORY},
 	{"type", optional_argument, NULL, 't'},
@@ -118,6 +121,7 @@ void usage(const char *program_name, int brief)
 	printf("Print information about the components of a SELinux policy.\n\n");
 	printf("EXPRESSIONS:\n");
 	printf("  -c[NAME], --class[=NAME]         print object classes\n");
+	printf("  --common[=NAME]                  print common classes\n");
 	printf("  --sensitivity[=NAME]             print sensitivities\n");
 	printf("  --category[=NAME]                print categories\n");
 	printf("  -t[NAME], --type[=NAME]          print types (no aliases or attributes)\n");
@@ -177,7 +181,7 @@ static int print_stats(FILE * fp, const apol_policy_t * policydb)
 		n_genfscons = 0, n_allows = 0, n_neverallows = 0, n_auditallows = 0, n_dontaudits = 0,
 		n_typetrans = 0, n_typechanges = 0, n_typemembers = 0, n_isids = 0, n_roleallows = 0,
 		n_roletrans = 0, n_rangetrans = 0, n_constr = 0, n_vtrans = 0, n_permissives = 0,
-		n_polcaps = 0;
+		n_polcaps = 0, n_commons = 0;
 
 	assert(policydb != NULL);
 
@@ -196,6 +200,12 @@ static int print_stats(FILE * fp, const apol_policy_t * policydb)
 		goto cleanup;
 	qpol_iterator_destroy(&iter);
 
+	if (qpol_policy_get_common_iter(q, &iter))
+		goto cleanup;
+	if (qpol_iterator_get_size(iter, &n_commons))
+		goto cleanup;
+	qpol_iterator_destroy(&iter);
+
 	perm_query = apol_perm_query_create();
 	if (!perm_query)
 		goto cleanup;
@@ -208,6 +218,7 @@ static int print_stats(FILE * fp, const apol_policy_t * policydb)
 	apol_perm_query_destroy(&perm_query);
 	apol_vector_destroy(&perms);
 	fprintf(fp, "\n   Classes:       %7zd    Permissions:   %7d\n", n_classes, n_perms);
+	fprintf(fp, "   Common classes:%7zd\n", n_commons);
 
 	/* sensitivities/categories */
 	if (qpol_policy_get_level_iter(q, &iter))
@@ -459,6 +470,56 @@ static int print_classes(FILE * fp, const char *name, int expand, const apol_pol
 			if (qpol_iterator_get_item(iter, (void **)&class_datum))
 				goto cleanup;
 			if (print_class_perms(fp, class_datum, policydb, expand))
+				goto cleanup;
+		}
+		qpol_iterator_destroy(&iter);
+	}
+
+	retval = 0;
+      cleanup:
+	qpol_iterator_destroy(&iter);
+	return retval;
+}
+
+/**
+ * Prints statistics regarding a policy's common classes.
+ * If this function is given a name, it will attempt to
+ * print statistics about a particular common class; otherwise
+ * the function prints statistics about all of the policy's common
+ * classes.
+ *
+ * @param fp Reference to a file to which to print statistics
+ * @param name Reference to an common class' name; if NULL,
+ * all common classes will be considered
+ * @param expand Flag indicating whether to print common class
+ * permissions
+ * @param policydb Reference to a policy
+ *
+ * @return 0 on success, < 0 on error.
+ */
+static int print_commons(FILE * fp, const char *name, int expand, const apol_policy_t * policydb)
+{
+	int retval = -1;
+	qpol_iterator_t *iter = NULL;
+	size_t n_commons = 0;
+	const qpol_common_t *common_datum = NULL;
+	qpol_policy_t *q = apol_policy_get_qpol(policydb);
+	if (name != NULL) {
+		if (qpol_policy_get_common_by_name(q, name, &common_datum))
+			goto cleanup;
+		if (print_common_perms(fp, common_datum, policydb, expand))
+			goto cleanup;
+	} else {
+		if (qpol_policy_get_common_iter(q, &iter))
+			goto cleanup;
+		if (qpol_iterator_get_size(iter, &n_commons))
+			goto cleanup;
+		fprintf(fp, "Common classes: %d\n", (int)n_commons);
+
+		for (; !qpol_iterator_end(iter); qpol_iterator_next(iter)) {
+			if (qpol_iterator_get_item(iter, (void **)&common_datum))
+				goto cleanup;
+			if (print_common_perms(fp, common_datum, policydb, expand))
 				goto cleanup;
 		}
 		qpol_iterator_destroy(&iter);
@@ -1664,20 +1725,20 @@ cleanup:	// close and destroy iterators etc.
 int main(int argc, char **argv)
 {
 	int rc = 0;
-	int classes, types, attribs, roles, users, all, expand, stats, rt, optc, isids, bools, sens, cats, fsuse, genfs, netif,
-		node, port, permissives, polcaps, constrain, linebreaks;
+	int classes, commons, types, attribs, roles, users, all, expand, stats, rt, optc, isids, bools, sens, cats, fsuse,
+		genfs, netif, node, port, permissives, polcaps, constrain, linebreaks;
 	apol_policy_t *policydb = NULL;
 	apol_policy_path_t *pol_path = NULL;
 	apol_vector_t *mod_paths = NULL;
 	apol_policy_path_type_e path_type = APOL_POLICY_PATH_TYPE_MONOLITHIC;
 
-	char *class_name, *type_name, *attrib_name, *role_name, *user_name, *isid_name, *bool_name, *sens_name, *cat_name,
+	char *class_name, *common_name, *type_name, *attrib_name, *role_name, *user_name, *isid_name, *bool_name, *sens_name, *cat_name,
 		*fsuse_type, *genfs_type, *netif_name, *node_addr, *permissive_name, *polcap_name, *port_num = NULL, *protocol = NULL;
 
-	class_name = type_name = attrib_name = role_name = user_name = isid_name = bool_name = sens_name = cat_name = fsuse_type =
-		genfs_type = netif_name = node_addr = port_num = permissive_name = polcap_name = NULL;
-	classes = types = attribs = roles = users = all = expand = stats = isids = bools = sens = cats = fsuse = genfs = netif =
-		node = port = permissives = polcaps = constrain = linebreaks = 0;
+	class_name = common_name = type_name = attrib_name = role_name = user_name = isid_name = bool_name = sens_name = cat_name =
+		fsuse_type = genfs_type = netif_name = node_addr = port_num = permissive_name = polcap_name = NULL;
+	classes = commons = types = attribs = roles = users = all = expand = stats = isids = bools = sens = cats = fsuse =
+		genfs = netif = node = port = permissives = polcaps = constrain = linebreaks = 0;
 	while ((optc = getopt_long(argc, argv, "c::t::a::r::u::b::lxhV", longopts, NULL)) != -1) {
 		switch (optc) {
 		case 0:
@@ -1686,6 +1747,11 @@ int main(int argc, char **argv)
 			classes = 1;
 			if (optarg != 0)
 				class_name = optarg;
+			break;
+		case OPT_COMMON:       /* common classes */
+			commons = 1;
+			if (optarg != 0)
+				common_name = optarg;
 			break;
 		case OPT_SENSITIVITY:
 			sens = 1;
@@ -1800,7 +1866,7 @@ int main(int argc, char **argv)
 	}
 
 	/* if no options, then show stats */
-	if (classes + types + attribs + roles + users + isids + bools + sens + cats + fsuse + genfs + netif + node + port + permissives + polcaps + constrain + all < 1) {
+	if (classes + commons + types + attribs + roles + users + isids + bools + sens + cats + fsuse + genfs + netif + node + port + permissives + polcaps + constrain + all < 1) {
 		stats = 1;
 	}
 
@@ -1872,6 +1938,8 @@ int main(int argc, char **argv)
 		rc = print_stats(stdout, policydb);
 	if (classes || all)
 		rc = print_classes(stdout, class_name, expand, policydb);
+	if (commons || all)
+		rc = print_commons(stdout, common_name, expand, policydb);
 	if (types || all)
 		rc = print_types(stdout, type_name, expand, policydb);
 	if (attribs || all)
@@ -2217,6 +2285,47 @@ static int print_class_perms(FILE * fp, const qpol_class_t * class_datum, const 
 		}
 		/* print unique perms for this class */
 		if (qpol_class_get_perm_iter(q, class_datum, &iter))
+			goto cleanup;
+		for (; !qpol_iterator_end(iter); qpol_iterator_next(iter)) {
+			if (qpol_iterator_get_item(iter, (void **)&perm_name))
+				goto cleanup;
+			fprintf(fp, "      %s\n", perm_name);
+		}
+		qpol_iterator_destroy(&iter);
+	}
+
+	retval = 0;
+      cleanup:
+	qpol_iterator_destroy(&iter);
+	return retval;
+}
+
+/**
+ * Prints a textual representation of an common class and possibly
+ * all of that common class' permissions.
+ *
+ * @param fp Reference to a file to which to print object class information
+ * @param common_datum Reference to sepol common_datum
+ * @param policydb Reference to a policy
+ * @param expand Flag indicating whether to print each object class'
+ * permissions
+ */
+static int print_common_perms(FILE * fp, const qpol_common_t * common_datum, const apol_policy_t * policydb, const int expand)
+{
+	int retval = -1;
+	const char *common_name = NULL, *perm_name = NULL;
+	qpol_iterator_t *iter = NULL;
+	qpol_policy_t *q = apol_policy_get_qpol(policydb);
+
+	if (!common_datum)
+		goto cleanup;
+
+	if (qpol_common_get_name(q, common_datum, &common_name))
+		goto cleanup;
+	fprintf(fp, "   %s\n", common_name);
+
+	if (expand) {
+		if (qpol_common_get_perm_iter(q, common_datum, &iter))
 			goto cleanup;
 		for (; !qpol_iterator_end(iter); qpol_iterator_next(iter)) {
 			if (qpol_iterator_get_item(iter, (void **)&perm_name))
