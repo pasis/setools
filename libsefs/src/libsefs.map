@@ -1,0 +1,29 @@
+VERS_4.0 {
+	global:
+		extern "C++" {
+			# typeinfo exports
+			*sefs_db;
+			*sefs_entry;
+			*sefs_fcfile;
+			*sefs_fclist;
+			*sefs_filesystem;
+			*sefs_query;
+			*std::invalid_argument;
+
+			sefs_db::*;
+			sefs_entry::*;
+			sefs_fcfile::*;
+			sefs_fclist::*;
+			sefs_filesystem::*;
+			sefs_query::*;
+		};
+		sefs_db_*;
+		sefs_default_file_contexts_get_path;
+		sefs_entry_*;
+		sefs_fcfile_*;
+		sefs_fclist_*;
+		sefs_filesystem_*;
+		sefs_query_*;
+		libsefs_get_version;
+	local: *;
+};

@@ -1,0 +1,259 @@
+Semantic Policy Difference Tool for Security Enhanced Linux
+
+
+Overview:
+---------
+The sediff and sediffx programs are policy analysis tools that take
+two policies and compare them, showing a list of the differences.  The
+former is a command-line only program while the latter is a GTK+
+application.  They can compare source, monolithic binary, and modular
+binary policies; they can also compare different versions of policy.
+The two programs support source policies versions 12 and higher,
+monolithic binary versions 15 and higher, and modular binary versions
+5 and higher.
+
+
+Limitations:
+------------
+The programs currently compare the following policy elements:
+  - commons and object classes
+  - levels and categories
+  - types and attributes
+  - roles
+  - users
+  - booleans
+  - access vector rules (allow, neverallow, etc.)
+  - type rules (type_transition, type_member, etc.)
+  - role allow rules
+  - role transition rules
+  - range transition rules
+
+
+What is a Semantic Diff?
+------------------------
+The challenge with comparing two policies is that a straightforward
+textual comparison is of little value.  What one needs is the ability
+to determine semantically how two policies differ.  For example, one
+could not simply grep for allow rules with a given type, and then
+compare them to a similar list from another policy.  Many factors
+affect the semantic meaning of the rules.  For example, multiple rules
+can allow differing sets of permissions.  Attributes can allow
+permissions to or from a type.  What was a type in one policy could
+become an alias in another.
+
+What sediff and sediffx do are analyze each policy semantically.  We
+define "semantically" as how the kernel security server uses a policy
+to make enforcement decisions.  This approach also allows binary and
+source policies to be compared, as well as different versions of
+policies.
+
+NOTE: The one semantic assumption sediff and sediffx make is that when
+an identifier (e.g., a type name) has the same string value in each
+policy, then it represents the same semantic meaning in both policies.
+
+
+sediff and sediffx Commands:
+----------------------------
+Policies may be differentiated upon the command line (see "sediff
+--help") or in a graphical environment (see "sediffx --help").  The
+sediffx tool is recommended because it gives additional details about
+policy differences and affords type remappings.  The remainder of this
+document focuses on sediffx.
+
+
+Understanding sediffx's Results: 
+--------------------------------
+After calculating differences between two policies, the GUI shows the
+compared policy components in the top-left frame.  Besides each policy
+component is a number representing the total number of differences for
+that component.  Select a policy component to show detailed results in
+the right-hand window.
+
+NOTE: All differences are shown from the perspective of the first
+policy given (i.e., "original policy") to the second ("modified
+policy").  There are five types of differences shown:
+
+  - Added (+): A policy component was added by the second policy (in
+    modified policy but not original policy).
+
+  - Removed (-): A policy component was removed by the second policy
+    (in original policy but not modified policy).
+
+  - Modified (*): A policy component was present in both policies, but
+    is different in the modified policy.
+
+Where appropriate, two other differences are possible:
+
+  - Added because of new type (+): This policy component could not
+    exist in the original policy because that policy does not declare
+    a necessary type.
+
+  - Removed because of missing type (-): This policy component could
+    not exist in the modified policy because that policy no longer
+    declares a necessary type.
+
+
+Supported Policy Areas Differences:
+-----------------------------------
+Below is an explanation of the difference for each supported policy
+area:
+
+  Commons:
+  --------
+  Classes can be added, removed, or modified.  Modified means that
+  the list of permissions associated with a common is different.
+
+  Classes:
+  --------
+  Classes are compared much like commons.  They too may be added,
+  removed, or modified.
+
+  Levels:
+  -------
+  If either policy is MLS then levels will be compared.  Levels can be
+  added or removed; a modified level means that the categories
+  assigned to its corresponding sensitivity has changed.  Be aware
+  that levels' aliases are ignored by the diff algorithm.
+
+  Categories:
+  -----------
+  If either policy is MLS then categories will be compared.  They can
+  be added or removed; there is no such thing as a "modified"
+  category.  Be aware that categories' aliases are ignored by the
+  diff algorithm.
+
+  Types:
+  ------
+  Types can be added, removed, or modified.  Modified means that the
+  attributes associated with a type are different between the two
+  policies.
+
+  Attributes:
+  -----------
+  Attributes are compared like types.  They can be added, removed,
+  or modified.  Modified means that the types associated with the
+  attributes are different (types can be added or removed from the
+  attribute).
+
+  Roles:
+  ------
+  Roles can be added, removed, or modified.  Modified means that the
+  types associated with a role are different between the two policies.
+  Types can be added or removed from a role.
+
+  Users:
+  ------
+  Users can be added, removed, or modified.  Modified means that the
+  roles associated with a user are different between the two policies.
+  Roles can be added or removed from a user.  In addition, if either
+  policy is MLS then the users' ranges and default levels are also
+  compared.
+
+  Booleans:
+  ---------
+  Booleans can be added, removed, or modified.  If comparing a version
+  15 or earlier policy with a version 16 or later policy, all the
+  booleans will be added or removed, for booleans were introduced in
+  version 16.  Modified means that the default value is different
+  between the two policies.
+
+  AV Rules:
+  ---------
+  Finding differences in access vector rules (allow, neverallow, etc.)
+  consumes the majority of time when diffing two policies.  The rule
+  comparison is truly semantic.  All issues of redundancy and
+  duplication, as well as indirect access through attributes are
+  resolved.  All rules are keyed by the "source-target-class" (STC)
+  triple.  In addition, conditional rules are distinguished from
+  non-conditional rules.  Thus, for example, two rules with the same
+  STC will not be compared if one is non-conditional and the other is
+  conditional, or if both are conditional but conditioned on two
+  different conditional expressions.  For conditional rules, the
+  conditional expression is compared to ensure that conditional rules
+  are meaningfully compared.  In the results pane, conditional rules
+  are displayed with their associated conditional expression and if
+  the rule was in conditional's TRUE or FALSE branch.
+
+  NOTE: For conditional rules, the default and current values of
+  the booleans are ignored.  Conditional expressions are compared
+  as if all booleans were in the same state.
+
+  Rules can be added, removed, or modified.  Added means the STC
+  triple for that rule is not present in the original policy but in
+  the modified one.  Removed means the STC triple is present in the
+  original but not modified policy.  Modified means that the
+  permissions for the rule are different between the policies.
+
+  When source policies are compared, hyperlinked line numbers are
+  shown that takes the user to the policy's source where the rule was
+  defined.  If there were more than one source rules that contributed
+  to a STC triple for a given rule, then all relevant source rules are
+  linked.  Furthermore, the user may click upon an individual
+  permission to obtain a list of lines that contributed just that
+  permission.
+
+  Type Rules:
+  -----------
+  Type rules are type_transition, type_member, and type_change.  They
+  are differentiated much like AV rules in that their STCs are used as
+  keys.  For type rules, modified means that the default type is
+  different between the policies.
+
+  Role Allows:
+  ------------
+  Role allow rules determine if a role is allowed to transition to
+  another role.  Diffing a role allow involves taking the source role
+  and checking to see if there are corresponding rules in the other
+  policy with the same source role.  A modified role allow means the
+  same source exist in both policies but target roles differ.
+
+  Role Transitions:
+  -----------------
+  Role transitions are keyed against both the source role and target
+  type.  If a role transition exists in both policies but has a
+  different default role then it is marked as modified.
+
+  Range Transitions:
+  ------------------
+  Range transitions have a STC much like AV rules.  A modified range
+  transition indicates a difference in the rules' target ranges.  This
+  could be either a difference in level or in minimal category set.
+
+
+Policy Tabs:
+------------
+Each policy has a tab on the main window labeled Policy #: followed by
+the policy file name.  Under these tabs are a policy statistics tab
+and a source tab.
+
+  Policy Statistics Tab:
+  ----------------------
+  The policy statistics tab displays a summary of that policy's
+  contents.
+    
+  Source Tab:
+  -----------
+  If the policy is a source policy, this tab displays the source of
+  that policy.
+
+
+Remapping Types:
+----------------
+The diff algorithm implicitly treats a type with the same name across
+both policies as the same semantic item.  This includes a name that
+was a type in one policy but became an alias in the other.  There may
+be instances where the operator has special knowledge of the remaining
+unmapped types.  From sediffx's main interface, select "Remap Types"
+from the Tools menu to open a dialog box.  Add additional remappings
+between types as necessary.
+
+There are times when a one-to-one mapping is not sufficient for
+analysis purposes.  Occasionally a type is "split" into two or more
+types; conversely multiple types are "joined" into a single type.  For
+example, a policy has the type "games_t" for a number of programs.  At
+some point in the future the policy writer decides to give NetHack its
+own type, "nethack_t".  To represent this type split in sediffx, go to
+the Remap Types dialog.  There should already be an inferred mapping
+from the original policy's games_t to the modified policy.  Add a new
+mapping from games_t to nethack_t.  The mappings list will be updated
+to show that games_t now maps to both games_t and nethack_t.

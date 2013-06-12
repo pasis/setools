@@ -1,0 +1,6 @@
+if DO_SWIGIFY_PYTHON
+  MAYBE_PYSWIG = setools
+endif
+
+
+SUBDIRS = $(MAYBE_PYSWIG)

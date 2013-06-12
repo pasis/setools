@@ -1,0 +1,36 @@
+.TH indexcon 1
+.SH NAME
+indexcon \- SELinux file context indexing tool
+.SH SYNOPSIS
+.B indexcon
+FILE [OPTIONS]
+.SH DESCRIPTION
+.PP
+.B indexcon
+allows the user to index the file contexts on a SELinux system,
+beginning with the root directory (
+.B
+/
+) and recursing into subdirectories.
+The index will be written to FILE.
+The index can be searched using apol or findcon.
+.SH OPTIONS
+.IP "-d DIR, --directory=DIR"
+Start scanning at directory DIR, and recurse through its subdirectories.
+.IP "-h, --help"
+Print help information and exit.
+.IP "-V, --version"
+Print version information and exit.
+.SH NOTE
+The indexcon utility always operates on "raw" SELinux file contexts.
+If the system has an installed translation library (i.e., libsetrans),
+those translations are ignored in favor of reading the original
+contexts from the filesystem.
+.SH AUTHOR
+This manual page was written by Jeremy A. Mowery <jmowery@tresys.com>.
+.SH COPYRIGHT
+Copyright(C) 2003-2007 Tresys Technology, LLC
+.SH BUGS
+Please report bugs via an email to setools-bugs@tresys.com.
+.SH SEE ALSO
+apol(1), findcon(1)
