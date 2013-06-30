@@ -1,5 +1,5 @@
 %define setools_maj_ver 3.3
-%define setools_min_ver 7
+%define setools_min_ver 8
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
@@ -9,12 +9,11 @@ Release: 1%{?dist}
 License: GPLv2
 URL: http://oss.tresys.com/projects/setools
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Source: http://oss.tresys.com/projects/setools/chrome/site/dists/setools-%{version}/setools-%{version}.tar.bz2
-Source1: setools.pam
+Source: setools-%{version}.tar.bz2
+Source1: seaudit.pam
 Source2: apol.desktop
 Source3: seaudit.desktop
 Source4: sediffx.desktop
-Patch1: setools-python.patch
 Summary: Policy analysis tools for SELinux
 Group: System Environment/Base
 Requires: setools-libs = %{version}-%{release} setools-libs-tcl = %{version}-%{release} setools-gui = %{version}-%{release} setools-console = %{version}-%{release}
@@ -186,7 +185,7 @@ This package includes the following graphical tools:
 
 %prep
 %setup -q
-%patch1 -p 1 -b .python
+autoreconf -i
 
 %build
 %configure --libdir=%{_libdir} --disable-bwidget-check --disable-selinux-check \
