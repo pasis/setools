@@ -228,7 +228,7 @@ SWIGEXPORT int Tqpol_Init(Tcl_Interp *interp) {
 #define QPOL_MODULE_OTHER   2
 typedef struct qpol_module {} qpol_module_t;
 %extend qpol_module_t {
-	qpol_module_t(const char *path) {
+	qpol_module(const char *path) {
 		qpol_module_t *m;
 		BEGIN_EXCEPTION
 		if (qpol_module_create_from_file(path, &m)) {
@@ -239,7 +239,7 @@ typedef struct qpol_module {} qpol_module_t;
 	fail:
 		return NULL;
 	};
-	~qpol_module_t() {
+	~qpol_module() {
 		qpol_module_destroy(&self);
 	};
 	const char *get_path() {
@@ -330,7 +330,7 @@ typedef enum qpol_capability
 } qpol_capability_e;
 
 %extend qpol_policy_t {
-	qpol_policy_t(const char *path, const int options) {
+	qpol_policy(const char *path, const int options) {
 		qpol_policy_t *p;
 		BEGIN_EXCEPTION
 		if (qpol_policy_open_from_file(path, &p, qpol_swig_message_callback, qpol_swig_message_callback_arg, options) < 0) {
@@ -341,7 +341,7 @@ typedef enum qpol_capability
 	fail:
 		return NULL;
 	}
-	~qpol_policy_t() {
+	~qpol_policy() {
 		qpol_policy_destroy(&self);
 	};
 	void reevaluate_conds() {
@@ -687,14 +687,14 @@ typedef enum qpol_capability
 typedef struct qpol_iterator {} qpol_iterator_t;
 %extend qpol_iterator_t {
 	/* user never directly creates, but SWIG expects a constructor */
-	qpol_iterator_t() {
+	qpol_iterator() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_TypeError, "User may not create iterators difectly");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_iterator_t() {
+	~qpol_iterator() {
 		qpol_iterator_destroy(&self);
 	};
 	void *get_item() {
@@ -736,7 +736,7 @@ typedef struct qpol_iterator {} qpol_iterator_t;
 /* qpol type */
 typedef struct qpol_type {} qpol_type_t;
 %extend qpol_type_t {
-	qpol_type_t(qpol_policy_t *p, const char *name) {
+	qpol_type(qpol_policy_t *p, const char *name) {
 		BEGIN_EXCEPTION
 		const qpol_type_t *t;
 		if (qpol_policy_get_type_by_name(p, name, &t)) {
@@ -747,7 +747,7 @@ typedef struct qpol_type {} qpol_type_t;
 	fail:
 		return NULL;
 	};
-	~qpol_type_t() {
+	~qpol_type() {
 		/* no op */
 		return;
 	};
@@ -851,7 +851,7 @@ typedef struct qpol_type {} qpol_type_t;
 /* qpol role */
 typedef struct qpol_role {} qpol_role_t;
 %extend qpol_role_t {
-	qpol_role_t(qpol_policy_t *p, const char *name) {
+	qpol_role(qpol_policy_t *p, const char *name) {
 		const qpol_role_t *r;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_role_by_name(p, name, &r)) {
@@ -862,7 +862,7 @@ typedef struct qpol_role {} qpol_role_t;
 	fail:
 		return NULL;
 	};
-	~qpol_role_t() {
+	~qpol_role() {
 		/* no op */
 		return;
 	};
@@ -919,7 +919,7 @@ typedef struct qpol_role {} qpol_role_t;
 /* qpol level */
 typedef struct qpol_level {} qpol_level_t;
 %extend qpol_level_t {
-	qpol_level_t(qpol_policy_t *p, const char *name) {
+	qpol_level(qpol_policy_t *p, const char *name) {
 		const qpol_level_t *l;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_level_by_name(p, name, &l)) {
@@ -930,7 +930,7 @@ typedef struct qpol_level {} qpol_level_t;
 	fail:
 		return NULL;
 	};
-	~qpol_level_t() {
+	~qpol_level() {
 		/* no op */
 		return;
 	};
@@ -997,7 +997,7 @@ typedef struct qpol_level {} qpol_level_t;
 /* qpol cat */
 typedef struct qpol_cat {} qpol_cat_t;
 %extend qpol_cat_t {
-	qpol_cat_t(qpol_policy_t *p, const char *name) {
+	qpol_cat(qpol_policy_t *p, const char *name) {
 		const qpol_cat_t *c;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_cat_by_name(p, name, &c)) {
@@ -1008,7 +1008,7 @@ typedef struct qpol_cat {} qpol_cat_t;
 	fail:
 		return NULL;
 	};
-	~qpol_cat_t() {
+	~qpol_cat() {
 		/* no op */
 		return;
 	};
@@ -1064,14 +1064,14 @@ typedef struct qpol_cat {} qpol_cat_t;
 /* qpol mls range */
 typedef struct qpol_mls_range {} qpol_mls_range_t;
 %extend qpol_mls_range_t {
-	qpol_mls_range_t() {
+	qpol_mls_range() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_mls_range_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	}
-	~qpol_mls_range_t() {
+	~qpol_mls_range() {
 		/* no op */
 		return;
 	};
@@ -1105,14 +1105,14 @@ typedef struct qpol_mls_range {} qpol_mls_range_t;
 /* qpol mls level */
 typedef struct qpol_mls_level {} qpol_mls_level_t;
 %extend qpol_mls_level_t {
-	qpol_mls_level_t() {
+	qpol_mls_level() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_mls_level_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	}
-	~qpol_mls_level_t() {
+	~qpol_mls_level() {
 		/* no op */
 		return;
 	};
@@ -1147,7 +1147,7 @@ typedef struct qpol_mls_level {} qpol_mls_level_t;
 /* qpol user */
 typedef struct qpol_user {} qpol_user_t;
 %extend qpol_user_t {
-	qpol_user_t(qpol_policy_t *p, const char *name) {
+	qpol_user(qpol_policy_t *p, const char *name) {
 		const qpol_user_t *u;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_user_by_name(p, name, &u)) {
@@ -1158,7 +1158,7 @@ typedef struct qpol_user {} qpol_user_t;
 	fail:
 		return NULL;
 	};
-	~qpol_user_t() {
+	~qpol_user() {
 		/* no op */
 		return;
 	};
@@ -1223,7 +1223,7 @@ typedef struct qpol_user {} qpol_user_t;
 /* qpol bool */
 typedef struct qpol_bool {} qpol_bool_t;
 %extend qpol_bool_t {
-	qpol_bool_t(qpol_policy_t *p, const char *name) {
+	qpol_bool(qpol_policy_t *p, const char *name) {
 		qpol_bool_t *b;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_bool_by_name(p, name, &b)) {
@@ -1233,7 +1233,7 @@ typedef struct qpol_bool {} qpol_bool_t;
 	fail:
 		return b;
 	};
-	~qpol_bool_t() {
+	~qpol_bool() {
 		/* no op */
 		return;
 	};
@@ -1295,14 +1295,14 @@ typedef struct qpol_bool {} qpol_bool_t;
 /* qpol context */
 typedef struct qpol_context {} qpol_context_t;
 %extend qpol_context_t {
-	qpol_context_t() {
+	qpol_context() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_context_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_context_t() {
+	~qpol_context() {
 		/* no op */
 		return;
 	};
@@ -1356,7 +1356,7 @@ typedef struct qpol_context {} qpol_context_t;
 /* qpol class */
 typedef struct qpol_class {} qpol_class_t;
 %extend qpol_class_t {
-	qpol_class_t(qpol_policy_t *p, const char *name) {
+	qpol_class(qpol_policy_t *p, const char *name) {
 		const qpol_class_t *c;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_class_by_name(p, name, &c)) {
@@ -1366,7 +1366,7 @@ typedef struct qpol_class {} qpol_class_t;
 	fail:
 		return (qpol_class_t*)c;
 	};
-	~qpol_class_t() {
+	~qpol_class() {
 		/* no op */
 		return;
 	};
@@ -1443,7 +1443,7 @@ typedef struct qpol_class {} qpol_class_t;
 /* qpol common */
 typedef struct qpol_common {} qpol_common_t;
 %extend qpol_common_t {
-	qpol_common_t(qpol_policy_t *p, const char *name) {
+	qpol_common(qpol_policy_t *p, const char *name) {
 		const qpol_common_t *c;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_common_by_name(p, name, &c)) {
@@ -1453,7 +1453,7 @@ typedef struct qpol_common {} qpol_common_t;
 	fail:
 		return (qpol_common_t*)c;
 	};
-	~qpol_common_t() {
+	~qpol_common() {
 		/* no op */
 		return;
 	};
@@ -1515,7 +1515,7 @@ typedef struct qpol_common {} qpol_common_t;
 #define QPOL_FS_USE_PSID  6U
 #endif
 typedef struct qpol_fs_use {} qpol_fs_use_t;
-%extend qpol_fs_use_t {
+%extend qpol_fs_use {
 	qpol_fs_use_t(qpol_policy_t *p, const char *name) {
 		const qpol_fs_use_t *f;
 		BEGIN_EXCEPTION
@@ -1526,7 +1526,7 @@ typedef struct qpol_fs_use {} qpol_fs_use_t;
 	fail:
 		return (qpol_fs_use_t*)f;
 	};
-	~qpol_fs_use_t() {
+	~qpol_fs_use() {
 		/* no op */
 		return;
 	};
@@ -1594,7 +1594,7 @@ typedef struct qpol_fs_use {} qpol_fs_use_t;
 #endif
 typedef struct qpol_genfscon {} qpol_genfscon_t;
 %extend qpol_genfscon_t {
-	qpol_genfscon_t(qpol_policy_t *p, const char *name, const char *path) {
+	qpol_genfscon(qpol_policy_t *p, const char *name, const char *path) {
 		qpol_genfscon_t *g;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_genfscon_by_name(p, name, path, &g)) {
@@ -1604,7 +1604,7 @@ typedef struct qpol_genfscon {} qpol_genfscon_t;
 	fail:
 		return g;
 	};
-	~qpol_genfscon_t() {
+	~qpol_genfscon() {
 		free(self);
 	};
 	const char *get_name(qpol_policy_t *p) {
@@ -1656,7 +1656,7 @@ typedef struct qpol_genfscon {} qpol_genfscon_t;
 
 /* qpol isid */
 typedef struct qpol_isid {} qpol_isid_t;
-%extend qpol_isid_t {
+%extend qpol_isid {
 	qpol_isid_t(qpol_policy_t *p, const char *name) {
 		const qpol_isid_t *i;
 		BEGIN_EXCEPTION
@@ -1667,7 +1667,7 @@ typedef struct qpol_isid {} qpol_isid_t;
 	fail:
 		return (qpol_isid_t*)i;
 	};
-	~qpol_isid_t() {
+	~qpol_isid() {
 		/* no op */
 		return;
 	};
@@ -1701,7 +1701,7 @@ typedef struct qpol_isid {} qpol_isid_t;
 /* qpol netifcon */
 typedef struct qpol_netifcon {} qpol_netifcon_t;
 %extend qpol_netifcon_t {
-	qpol_netifcon_t(qpol_policy_t *p, const char *name) {
+	qpol_netifcon(qpol_policy_t *p, const char *name) {
 		const qpol_netifcon_t *n;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_netifcon_by_name(p, name, &n)) {
@@ -1711,7 +1711,7 @@ typedef struct qpol_netifcon {} qpol_netifcon_t;
 	fail:
 		return (qpol_netifcon_t*)n;
 	};
-	~qpol_netifcon_t() {
+	~qpol_netifcon() {
 		/* no op */
 		return;
 	};
@@ -1757,7 +1757,7 @@ typedef struct qpol_netifcon {} qpol_netifcon_t;
 #define QPOL_IPV6 1
 typedef struct qpol_nodecon {} qpol_nodecon_t;
 %extend qpol_nodecon_t {
-	qpol_nodecon_t(qpol_policy_t *p, int addr[4], int mask[4], int protocol) {
+	qpol_nodecon(qpol_policy_t *p, int addr[4], int mask[4], int protocol) {
 		uint32_t a[4], m[4];
 		qpol_nodecon_t *n;
 		BEGIN_EXCEPTION
@@ -1772,7 +1772,7 @@ typedef struct qpol_nodecon {} qpol_nodecon_t;
 	fail:
 		return n;
 	}
-	~qpol_nodecon_t() {
+	~qpol_nodecon() {
 		free(self);
 	};
 	uint32_t *get_addr(qpol_policy_t *p) {
@@ -1830,7 +1830,7 @@ typedef struct qpol_nodecon {} qpol_nodecon_t;
 #define IPPROTO_UDP 17
 typedef struct qpol_portcon {} qpol_portcon_t;
 %extend qpol_portcon_t {
-	qpol_portcon_t(qpol_policy_t *p, uint16_t low, uint16_t high, uint8_t protocol) {
+	qpol_portcon(qpol_policy_t *p, uint16_t low, uint16_t high, uint8_t protocol) {
 		const qpol_portcon_t *qp;
 		BEGIN_EXCEPTION
 		if (qpol_policy_get_portcon_by_port(p, low, high, protocol, &qp)) {
@@ -1840,7 +1840,7 @@ typedef struct qpol_portcon {} qpol_portcon_t;
 	fail:
 		return (qpol_portcon_t*)qp;
 	};
-	~qpol_portcon_t() {
+	~qpol_portcon() {
 		/* no op */
 		return;
 	};
@@ -1893,7 +1893,7 @@ typedef struct qpol_portcon {} qpol_portcon_t;
 
 /* qpol constraint */
 typedef struct qpol_constraint {} qpol_constraint_t;
-%extend qpol_constraint_t {
+%extend qpol_constraint {
 	qpol_constraint_t() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_constraint_t objects");
@@ -1901,7 +1901,7 @@ typedef struct qpol_constraint {} qpol_constraint_t;
 	fail:
 		return NULL;
 	};
-	~qpol_constraint_t() {
+	~qpol_constraint() {
 		free(self);
 	};
 	const qpol_class_t *get_class(qpol_policy_t *p) {
@@ -1945,7 +1945,7 @@ typedef struct qpol_constraint {} qpol_constraint_t;
 
 /* qpol validatetrans */
 typedef struct qpol_validatetrans {} qpol_validatetrans_t;
-%extend qpol_validatetrans_t {
+%extend qpol_validatetrans {
 	qpol_validatetrans_t() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_validatetrans_t objects");
@@ -1953,7 +1953,7 @@ typedef struct qpol_validatetrans {} qpol_validatetrans_t;
 	fail:
 		return NULL;
 	};
-	~qpol_validatetrans_t() {
+	~qpol_validatetrans() {
 		free(self);
 	};
 	const qpol_class_t *get_class(qpol_policy_t *p) {
@@ -2011,14 +2011,14 @@ typedef struct qpol_validatetrans {} qpol_validatetrans_t;
 #define QPOL_CEXPR_OP_INCOMP 5
 typedef struct qpol_constraint_expr_node {} qpol_constraint_expr_node_t;
 %extend qpol_constraint_expr_node_t {
-	qpol_constraint_expr_node_t() {
+	qpol_constraint_expr_node() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_constraint_expr_node_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_constraint_expr_node_t() {
+	~qpol_constraint_expr_node() {
 		/* no op */
 		return;
 	};
@@ -2073,14 +2073,14 @@ typedef struct qpol_constraint_expr_node {} qpol_constraint_expr_node_t;
 /* qpol role allow */
 typedef struct qpol_role_allow {} qpol_role_allow_t;
 %extend qpol_role_allow_t {
-	qpol_role_allow_t() {
+	qpol_role_allow() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_role_allow_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_role_allow_t() {
+	~qpol_role_allow() {
 		/* no op */
 		return;
 	};
@@ -2114,14 +2114,14 @@ typedef struct qpol_role_allow {} qpol_role_allow_t;
 /* qpol role trans */
 typedef struct qpol_role_trans {} qpol_role_trans_t;
 %extend qpol_role_trans_t {
-	qpol_role_trans_t() {
+	qpol_role_trans() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_role_trans_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_role_trans_t() {
+	~qpol_role_trans() {
 		/* no op */
 		return;
 	};
@@ -2165,14 +2165,14 @@ typedef struct qpol_role_trans {} qpol_role_trans_t;
 /* qpol range trans */
 typedef struct qpol_range_trans {} qpol_range_trans_t;
 %extend qpol_range_trans_t {
-	qpol_range_trans_t() {
+	qpol_range_trans() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_range_trans_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_range_trans_t() {
+	~qpol_range_trans() {
 		/* no op */
 		return;
 	};
@@ -2228,14 +2228,14 @@ typedef struct qpol_range_trans {} qpol_range_trans_t;
 #define QPOL_RULE_DONTAUDIT     4
 typedef struct qpol_avrule {} qpol_avrule_t;
 %extend qpol_avrule_t {
-	qpol_avrule_t() {
+	qpol_avrule() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_avrule_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_avrule_t() {
+	~qpol_avrule() {
 		/* no op */
 		return;
 	};
@@ -2348,14 +2348,14 @@ typedef struct qpol_avrule {} qpol_avrule_t;
 #define QPOL_RULE_TYPE_MEMBER  32
 typedef struct qpol_terule {} qpol_terule_t;
 %extend qpol_terule_t {
-	qpol_terule_t() {
+	qpol_terule() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_terule_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_terule_t() {
+	~qpol_terule() {
 		/* no op */
 		return;
 	};
@@ -2464,14 +2464,14 @@ typedef struct qpol_terule {} qpol_terule_t;
 /* qpol conditional */
 typedef struct qpol_cond {} qpol_cond_t;
 %extend qpol_cond_t {
-	qpol_cond_t() {
+	qpol_cond() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_cond_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_cond_t() {
+	~qpol_cond() {
 		/* no op */
 		return;
 	};
@@ -2557,14 +2557,14 @@ typedef struct qpol_cond {} qpol_cond_t;
 #define QPOL_COND_EXPR_NEQ  7      /* bool != bool */
 typedef struct qpol_cond_expr_node {} qpol_cond_expr_node_t;
 %extend qpol_cond_expr_node_t {
-	qpol_cond_expr_node_t() {
+	qpol_cond_expr_node() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_cond_expr_node_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_cond_expr_node_t() {
+	~qpol_cond_expr_node() {
 		/* no op */
 		return;
 	};
@@ -2602,14 +2602,14 @@ typedef struct qpol_cond_expr_node {} qpol_cond_expr_node_t;
 /* qpol type set */
 typedef struct qpol_type_set {} qpol_type_set_t;
 %extend qpol_type_set_t {
-	qpol_type_set_t() {
+	qpol_type_set() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_type_set_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_type_set_t() {
+	~qpol_type_set() {
 		/* no op */
 		return;
 	};
@@ -2665,14 +2665,14 @@ typedef struct qpol_type_set {} qpol_type_set_t;
 /* qpol syn av rule */
 typedef struct qpol_syn_avrule {} qpol_syn_avrule_t;
 %extend qpol_syn_avrule_t {
-	qpol_syn_avrule_t() {
+	qpol_syn_avrule() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_syn_avrule_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_syn_avrule_t() {
+	~qpol_syn_avrule() {
 		/* no op */
 		return;
 	};
@@ -2778,14 +2778,14 @@ typedef struct qpol_syn_avrule {} qpol_syn_avrule_t;
 /* qpol syn te rule */
 typedef struct qpol_syn_terule {} qpol_syn_terule_t;
 %extend qpol_syn_terule_t {
-	qpol_syn_terule_t() {
+	qpol_syn_terule() {
 		BEGIN_EXCEPTION
 		SWIG_exception(SWIG_RuntimeError, "Cannot directly create qpol_syn_terule_t objects");
 		END_EXCEPTION
 	fail:
 		return NULL;
 	};
-	~qpol_syn_terule_t() {
+	~qpol_syn_terule() {
 		/* no op */
 		return;
 	};
